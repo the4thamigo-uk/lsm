@@ -1,4 +1,4 @@
-package lsm
+package sortedmap
 
 import (
 	"sort"
@@ -10,6 +10,50 @@ type (
 		order []string
 	}
 )
+
+func (m *Map) Add(key string, val interface{}) {
+	ok := m.insertMap(key, val)
+	if ok {
+		ok = m.insertSlice(key)
+		if !ok {
+			panic("should never occur")
+		}
+	}
+}
+
+func (m *Map) Remove(key string) {
+	ok := m.deleteMap(key)
+	if ok {
+		ok := m.deleteSlice(key)
+		if !ok {
+			panic("should never occur")
+		}
+	}
+}
+
+func (m *Map) Get(key string) (interface{}, bool) {
+	val, ok := m.items[key]
+	return val, ok
+}
+
+// Iter returns a function that can be used to iterate through the map
+// in key-sorted order. The key parameter specifies the start position.
+func (m *Map) Iter(key string) func() (string, interface{}, bool) {
+	var i int
+	if key != "" {
+		i = sort.SearchStrings(m.order, key)
+	}
+
+	return func() (string, interface{}, bool) {
+		if i < len(m.order) {
+			k := m.order[i]
+			v := m.items[k]
+			i++
+			return k, v, true
+		}
+		return "", nil, false
+	}
+}
 
 // insertMap inserts the key and val into the map and returns
 // true if  a new key was inserted
@@ -58,48 +102,4 @@ func (m *Map) deleteSlice(key string) bool {
 	}
 	m.order = append(m.order[:i], m.order[i+1:]...)
 	return true
-}
-
-func (m *Map) Add(key string, val interface{}) {
-	ok := m.insertMap(key, val)
-	if ok {
-		ok = m.insertSlice(key)
-		if !ok {
-			panic("should never occur")
-		}
-	}
-}
-
-func (m *Map) Remove(key string) {
-	ok := m.deleteMap(key)
-	if ok {
-		ok := m.deleteSlice(key)
-		if !ok {
-			panic("should never occur")
-		}
-	}
-}
-
-func (m *Map) Get(key string) (interface{}, bool) {
-	val, ok := m.items[key]
-	return val, ok
-}
-
-// Iter returns a function that can be used to iterate through the map
-// in key-sorted order. The key parameter specifies the start position.
-func (m *Map) Iter(key string) func() (string, interface{}, bool) {
-	var i int
-	if key != "" {
-		i = sort.SearchStrings(m.order, key)
-	}
-
-	return func() (string, interface{}, bool) {
-		if i < len(m.order) {
-			k := m.order[i]
-			v := m.items[k]
-			i++
-			return k, v, true
-		}
-		return "", nil, false
-	}
 }

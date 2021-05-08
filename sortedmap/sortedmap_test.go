@@ -1,11 +1,11 @@
-package lsm
+package sortedmap
 
 import (
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestMap_AddRemove(t *testing.T) {
+func Test_AddRemove(t *testing.T) {
 	var m Map
 
 	m.Add("x", 1)
@@ -45,7 +45,7 @@ func TestMap_AddRemove(t *testing.T) {
 	m.Remove("z")
 }
 
-func TestMap_Iter(t *testing.T) {
+func Test_Iter(t *testing.T) {
 	var m Map
 	m.Add("z", 3)
 	m.Add("w", 1)
